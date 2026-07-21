@@ -225,7 +225,7 @@ c     CALL  FYXSEC8(E0SET,EPSET,TH,SIGMA_CORR)
          SIGMA_BORNPLSQE = SIGMA_BORN+SIGMA_CORR
 
          dorad=.true.
-         doext=.false.
+         doext=.true.
           
          if(dorad) then 
 C Radiation length integral. Loop over internal and internal+external:  
@@ -1149,6 +1149,9 @@ c default for a simple target
       TAFTER=(ttarg-t)/cos(thr)       ! target/cos(th)
       TBAL= TBEAM                     ! material before the target
       TAAL= TSPEC                     ! material after the target
+c RG-D: downstream material handled by GEMC (external upstream only)
+      TAFTER= 0.0
+      TAAL= 0.0
 
       IF(INDEX(TARGET,'E154').GT.0) THEN                    
        CALL RADLEN154(TARGET,T,TH,TAFTER,TBAL,TAAL,TBEFOR)  
