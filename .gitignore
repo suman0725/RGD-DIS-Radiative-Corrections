@@ -15,3 +15,6 @@ results/tables/*.txt
 
 
 !results/tables/dis_rc_reference_grid.csv
+
+!results/tables/dis_rc_12bins_v1_kinematics.csv
+!results/tables/dis_rc_12bins_v1.csv

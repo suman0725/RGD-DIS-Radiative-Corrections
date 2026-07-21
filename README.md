@@ -62,6 +62,25 @@ positive Born/radiated cross sections, and writes a combined factor table.
 Generated tables are placed under `results/`. They are not automatically
 physics-approved or committed.
 
+## Run a versioned xB-Q2 binning
+
+```bash
+python3 scripts/make_runplan_from_bins.py \
+  /work/clas12/suman/RGD_SIDIS_Analysis/projects/phase_space_qa/configs/rectangles/xbq2_rectangles_v8_W2_edge_12bins.csv \
+  --version dis_12bins_v1 \
+  --run-plan RUNPLAN/dis_12bins_v1.inp \
+  --bin-map results/tables/dis_rc_12bins_v1_kinematics.csv
+
+python3 scripts/run_rgd.py \
+  --run-plan RUNPLAN/dis_12bins_v1.inp \
+  --bin-map results/tables/dis_rc_12bins_v1_kinematics.csv \
+  --output results/tables/dis_rc_12bins_v1.csv \
+  --radiation internal-external
+```
+
+The resulting table carries `binning_version`, `bin_id`, and xB/Q2 bin bounds so
+multiplicity-ratio code can expand the DIS correction onto projection bins.
+
 ## Plot correction checks
 
 ```bash

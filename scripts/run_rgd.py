@@ -32,6 +32,23 @@ COLUMNS = [
 ]
 
 
+def read_bin_map(path: Path | None, expected: int) -> list[dict[str, object]] | None:
+    if path is None:
+        return None
+    rows: list[dict[str, object]] = []
+    with path.open(newline="") as stream:
+        reader = csv.DictReader(stream)
+        required = {"binning_version", "bin_id"}
+        missing = required - set(reader.fieldnames or [])
+        if missing:
+            raise RuntimeError(f"{path} is missing columns: {', '.join(sorted(missing))}")
+        for source in reader:
+            rows.append({key: value for key, value in source.items() if key not in {"Ebeam", "Eprime", "theta"}})
+    if len(rows) != expected:
+        raise RuntimeError(f"{path}: found {len(rows)} bin rows; expected {expected}")
+    return rows
+
+
 def physics_rows(stdout: str) -> list[list[float]]:
     rows: list[list[float]] = []
     for line in stdout.splitlines():
@@ -48,6 +65,18 @@ def physics_rows(stdout: str) -> list[list[float]]:
     return rows
 
 
+def runtime_input(root: Path, stem: str, run_plan: Path, radiation_mode: str) -> Path:
+    source = root / "INP" / f"{stem}.inp"
+    lines = source.read_text().splitlines()
+    if len(lines) < 4:
+        raise RuntimeError(f"unexpected target input format: {source}")
+    lines[1] = run_plan.relative_to(root).as_posix()
+
+    path = root / "INP" / f"{stem}_{radiation_mode.replace('-', '_')}.inp"
+    path.write_text("\n".join(lines) + "\n")
+    return path.relative_to(root)
+
+
 def run_target(
     root: Path,
     binary: Path,
@@ -55,22 +84,28 @@ def run_target(
     stem: str,
     expected: int,
     radiation_mode: str,
+    bin_map: list[dict[str, object]] | None,
+    run_plan: Path,
 ) -> list[dict[str, object]]:
     input_path = root / "INP" / f"{stem}.inp"
     if not input_path.exists():
         raise RuntimeError(f"missing target input: {input_path}")
+    run_input = runtime_input(root, stem, run_plan, radiation_mode)
 
     env = os.environ.copy()
     env["RGD_DOEXT"] = RADIATION_MODES[radiation_mode]
-    completed = subprocess.run(
-        [str(binary)],
-        cwd=root,
-        input=f"INP/{stem}.inp\n",
-        text=True,
-        capture_output=True,
-        check=False,
-        env=env,
-    )
+    try:
+        completed = subprocess.run(
+            [str(binary)],
+            cwd=root,
+            input=f"{run_input}\n",
+            text=True,
+            capture_output=True,
+            check=False,
+            env=env,
+        )
+    finally:
+        (root / run_input).unlink(missing_ok=True)
     log_dir = root / "results" / "logs"
     log_dir.mkdir(parents=True, exist_ok=True)
     log_stem = f"{stem}_{radiation_mode.replace('-', '_')}"
@@ -87,12 +122,14 @@ def run_target(
         raise RuntimeError(f"{target}: extracted {len(parsed)} physics rows; expected {expected}")
 
     rows: list[dict[str, object]] = []
-    for values in parsed:
+    for index, values in enumerate(parsed):
         row: dict[str, object] = {
             "target": target,
             "radiation_mode": radiation_mode,
             **dict(zip(COLUMNS, values)),
         }
+        if bin_map is not None:
+            row = {**bin_map[index], **row}
         born = float(row["sigma_born"])
         radiated = float(row["sigma_rad"])
         if not (math.isfinite(born) and math.isfinite(radiated) and born > 0 and radiated > 0):
@@ -125,6 +162,11 @@ def main() -> int:
     parser.add_argument("--binary", default="./externals_all")
     parser.add_argument("--output", default="results/tables/dis_rc_reference_grid.csv")
     parser.add_argument(
+        "--bin-map",
+        default=None,
+        help="optional CSV with binning_version and bin_id rows matching the run plan",
+    )
+    parser.add_argument(
         "--radiation",
         choices=["internal", "internal-external", "both"],
         default="both",
@@ -136,6 +178,7 @@ def main() -> int:
     (root / "OUT").mkdir(exist_ok=True)
     run_plan = root / args.run_plan
     expected = run_plan_points(run_plan)
+    bin_map = read_bin_map(root / args.bin_map if args.bin_map else None, expected)
     binary = (root / args.binary).resolve()
     if not binary.exists():
         raise SystemExit(f"missing executable: {binary}; run make first")
@@ -145,11 +188,13 @@ def main() -> int:
     for mode in modes:
         for target, stem in TARGETS.items():
             print(f"Running {target} ({stem}, {mode})...", flush=True)
-            rows.extend(run_target(root, binary, target, stem, expected, mode))
+            rows.extend(run_target(root, binary, target, stem, expected, mode, bin_map, run_plan))
 
     output = root / args.output
     output.parent.mkdir(parents=True, exist_ok=True)
     fields = ["target", "radiation_mode", *COLUMNS, "dis_rc_factor", "dis_rc_factor_err"]
+    if bin_map is not None:
+        fields = [*bin_map[0].keys(), *fields]
     with output.open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=fields)
         writer.writeheader()
