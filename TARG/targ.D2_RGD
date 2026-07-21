@@ -1,0 +1,26 @@
+RG-D liquid deuterium (LD2), internal+external RC
+Updated for RG-D Hall B cryotarget: 4.87 cm cell, 30um Al entry window (GEMC geometry)
+----*----1----*----2----*----3----*----4----*----5----*----6----*----7---
+
+iZ    (#)          1
+iA    (#)          2
+
+avgA  (#)
+avgM (GeV)
+
+target type            E99L     : columns 21-27
+thicknesses (rad. lengths):
+   target          0.00634     
+   walls           0.000001    
+   pre-target      0.00034     
+   post-target     0.000001    
+nseg (even)        4
+
+Pking: Ep/E >      1.0
+ikk               14  elastic nucleon model
+iout               2
+idut              13 elastic d2 model: 0=old, 11,12,13,14=Ulmar(below
+inel_model       206  inelastc d2 model: 0=ineft(Bodek);9,12=Stuart+F2Glob etc.
+pauli_model        4  0= stein; 1=tsai; 2 none; 3=vanorden; 4=lapikas
+Nuc Tail Method    1  0=No cos(theta_k) integration;  1= cos(th_k) integration
+Nuc FormFac Mdl    1  0=Shell,Gauss, 1=Hicks for Si28 and O16

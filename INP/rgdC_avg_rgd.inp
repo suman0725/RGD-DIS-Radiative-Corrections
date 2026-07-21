@@ -1,0 +1,6 @@
+RG-D Carbon foils (CxC averaged) - 1mm C, averaged upstream material (C1 + C2)/2
+RUNPLAN/rgd_kin.inp
+TARG/targ.C_avg_RGD
+OUT/rgdC_avg_rgd_details.out
+
+

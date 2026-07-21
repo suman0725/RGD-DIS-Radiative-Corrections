@@ -1,0 +1,6 @@
+RG-D Tin foil (first-info effective z=-7.5 cm; geometry foil at 125 mm) - 171um Sn, 2x30um Al + Cu upstream
+RUNPLAN/rgd_kin.inp
+TARG/targ.Sn_RGD
+OUT/rgdSn_rgd_details.out
+
+

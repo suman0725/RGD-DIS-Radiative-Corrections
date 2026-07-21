@@ -1,0 +1,6 @@
+RG-D Copper foil (first-info effective z=-2.5 cm; geometry foil at 75 mm) - 93um Cu, 2x30um Al windows upstream
+RUNPLAN/rgd_kin.inp
+TARG/targ.Cu_RGD
+OUT/rgdCu_rgd_details.out
+
+

@@ -1,0 +1,6 @@
+RG-D Carbon foil 2 (first-info effective z=-7.5 cm; geometry foil at 125 mm) - full 2mm C, 2x30um Al + C1 upstream
+RUNPLAN/rgd_kin.inp
+TARG/targ.C2_RGD
+OUT/rgdC2_rgd_details.out
+
+

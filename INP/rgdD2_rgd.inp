@@ -1,0 +1,6 @@
+RG-D LD2 target with corrected GEMC geometry (4.87 cm cell, 30um Al entry window)
+RUNPLAN/rgd_kin.inp
+TARG/targ.D2_RGD
+OUT/rgdD2_rgd_details.out
+
+
