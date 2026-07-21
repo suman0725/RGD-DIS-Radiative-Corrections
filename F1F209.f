@@ -972,7 +972,7 @@ c new 5/07 values. Values 1 and 7 will be overridden below.
 
       sig = 0.
       if(w2.lt.1.07327**2 .or. w2.gt.25 .or. 
-     >  q2.lt.0.0 .or. q2.gt.11.0) then
+     >  q2.lt.0.0 .or. q2.gt.20.0) then
         write(6,'(1x,''error, q2 or w2 out of range'',2f8.3)') w2,q2
         return
       endif
