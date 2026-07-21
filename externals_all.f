@@ -681,7 +681,7 @@ C The only integral is over the E0.
       REAL AVGN,AVGA,AVGM,AMUM   
       REAL*4 EPP,EPLO,E0HI,E0LO,E0P,FAC,SIGEFF,AI11,AI1,AI2,
      >       ANS1,ANS2,ANS3,SIGMA
-      REAL*4 FTSAI,BREMS,QUADMO_R
+      REAL*4 FTSAI,BREMS,QUADMO_R,FUNCQE
       INTEGER NLVL
       CHARACTER*1  CSTYPE                                               
       EXTERNAL     FUNCQE                                               
@@ -768,7 +768,7 @@ C The only integral is over the E0.
 
       REAL*4 EPP,SIGMA,SIGEFF,FTSAI,FAC,AI11,AI1,AI2,EPLO,E0HI,E0LO,
      >       E0P,ANS1,ANS2,ANS3
-      REAL*4 QUADMO_R,BREMS       
+      REAL*4 QUADMO_R,BREMS,FUNCE
       INTEGER NLVL
 
       EXTERNAL       FUNCE
@@ -8897,7 +8897,7 @@ C      END
 C BACKGROUND AND RESONANCE CONTRIBUTION FOR ATWOOD'S FIT                
 
       Implicit none
-      REAL*8  WM,QSQ,C(80),WSQ,OMEGA,X,XPX,PIEMSQ,B1,EB1,B2,BBKG
+      REAL*8  WM,QSQ,C(*),WSQ,OMEGA,X,XPX,PIEMSQ,B1,EB1,B2,BBKG
       REAL*8  RAM,RMA,RWD,QSTARN,QSTARO,TERM,TERMO,GAMRES,BRWIG,RES
       REAL*8  RESSUM,EB2,BRES
       INTEGER   LSPIN(4),INDEX,J,K                                             
