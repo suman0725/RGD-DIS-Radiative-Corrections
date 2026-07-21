@@ -62,6 +62,17 @@ positive Born/radiated cross sections, and writes a combined factor table.
 Generated tables are placed under `results/`. They are not automatically
 physics-approved or committed.
 
+## Plot correction checks
+
+```bash
+python3 scripts/plot_rgd.py
+```
+
+The plotting script reads `results/tables/dis_rc_reference_grid.csv` and writes
+diagnostic figures to `results/plots/` for internal-only versus
+internal+external corrections, the external-radiation effect, and LD2/A
+nuclear-ratio correction checks. Generated figures remain ignored by default.
+
 ## Production requirement
 
 The current `RUNPLAN/rgd_kin.inp` reproduces the earlier reference grid. The
@@ -79,4 +90,3 @@ the exact hybrid xB-Q2 bins. Before publishing factors, verify:
 
 - L. W. Mo and Y. S. Tsai, *Rev. Mod. Phys.* **41**, 205 (1969).
 - Y. S. Tsai, SLAC-PUB-848 (1971).
-

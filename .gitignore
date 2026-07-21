@@ -10,7 +10,6 @@ OUT/
 runout/
 results/logs/
 results/raw/
-results/plots/
 results/tables/*.csv
 results/tables/*.txt
 
