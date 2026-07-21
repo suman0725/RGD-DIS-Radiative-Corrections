@@ -1,44 +1,82 @@
-EXTERNALS
-===========
+# RG-D DIS Radiative Corrections
 
-## Structure
+Reproducible inclusive DIS radiative-correction workflow for CLAS12 Run Group
+D (RG-D). The repository contains the minimum EXTERNALS calculation engine,
+RG-D target material definitions, kinematic run plans, execution/validation
+scripts, and reviewed correction-factor tables.
 
-1. `INP/clasd2.inp` - this file is the "master" input file that basically just points to the other required inputs.
+The correction applied to a measured DIS-electron yield is
 
-2. `RUNPLAN/clas_kin.inp` - this file contains the kinematics at which to calculate the cross section and RC. Note that it's pretty sensitive to formatting.
-
-3. `TARG/targ.D2tuna` - this file contains a lot of info about the target (Z, A, geometry, model to use, etc.). 
-   Right now, the only variables that matter are Z and A since the program only calculates the internal corrections. 
-   The model choice is also hardwired for now to use **F1F209** from **Peter Bosted**.
-
-4. `OUT/clasd2_details.out` - this gives more detailed output than the summary table above.
-
-The `Coulomb/` directory is supplementary, contains example of modified `externals_all.f` - the same code `rc_Coulomb.C` is in `RC/` and in `Coulomb/RC_CC`.
-
-## Compilation
-
-To compile at **UTFSM Cluster**, run:
-
-1. `source set_env.sh`
-
-2. `make`
-
-## Execution
-
-To run on Deuterium target:
-```
-./run_extern.sh clasd2
+```text
+C_DIS = sigma_Born / sigma_radiated
+N_e_corrected = N_e_measured * C_DIS
 ```
 
-To run on Lead target:
+## Origin and attribution
+
+This work adapts the EXTERNALS package developed for inclusive electron
+scattering analyses. The original repository is:
+
+- https://github.com/utfsm-eg2-data-analysis/EXTERNALS
+
+Suman Shrestha's historical reference fork is:
+
+- https://github.com/suman0725/EXTERNALS
+
+The RG-D repository is standalone so the production workflow can remain small
+and auditable. Scientific provenance is preserved here and in `NOTICE.md`.
+
+## Contents
+
+```text
+*.f, *.inc, Makefile   minimal EXTERNALS Fortran engine
+INP/                   RG-D master inputs
+TARG/                  LD2, C1, C2, Cu and Sn material definitions
+RUNPLAN/               kinematic points supplied to EXTERNALS
+scripts/               controlled execution and table extraction
+results/               generated outputs (ignored until reviewed)
 ```
-./run_extern.sh clasPb208
+
+Legacy EG2 examples, Coulomb studies, scratch notebooks, compiled binaries,
+object files, backup files, and old generated outputs are intentionally not
+copied into this repository.
+
+## Build on JLab ifarm
+
+```bash
+cd /work/clas12/suman/RGD_SIDIS_Analysis/projects/corrections/dis_rc/RGD-DIS-Radiative-Corrections
+source set_env.sh
+make
 ```
+
+## Run the current RG-D reference grid
+
+```bash
+python3 scripts/run_rgd.py --run-plan RUNPLAN/rgd_kin.inp
+```
+
+The runner executes LD2, C1, C2, Cu and Sn independently. It retains the full
+program log, extracts only the 13-column EXTERNALS physics rows, validates
+positive Born/radiated cross sections, and writes a combined factor table.
+
+Generated tables are placed under `results/`. They are not automatically
+physics-approved or committed.
+
+## Production requirement
+
+The current `RUNPLAN/rgd_kin.inp` reproduces the earlier reference grid. The
+final multiplicity-ratio analysis requires a separately reviewed run plan for
+the exact hybrid xB-Q2 bins. Before publishing factors, verify:
+
+1. beam energy and kinematic-point/bin-averaging prescription;
+2. LD2 cell and window radiation lengths;
+3. C1/C2/Cu/Sn foil thickness and upstream material ordering;
+4. every Born and radiated cross section is finite and positive;
+5. complete target and hybrid-bin coverage;
+6. correction-factor systematic uncertainty.
 
 ## References
 
-1. *L. W. Mo, Y. S. Tsai.* Radiative corrections to elastic and inelastic ep and µp scattering. Rev. of Mod. Phys. **41**, 1 (1969)
+- L. W. Mo and Y. S. Tsai, *Rev. Mod. Phys.* **41**, 205 (1969).
+- Y. S. Tsai, SLAC-PUB-848 (1971).
 
-2. *Y. S. Tsai.* Radiative corrections to electron scatterings. **SLAC-PUB-848** (1971)
-
-Also, there is an excellent lecture prepared by [**Taisiya Mineeva**](mailto:taya.mineeva@gmail.com) at `QED-RC.pdf`.
