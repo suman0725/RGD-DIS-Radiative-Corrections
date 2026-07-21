@@ -421,6 +421,8 @@ cc also, all deltae_cc's are computed for Z-1, not Z!/-*
                  deltae_cc = 0.0199
               elseif(iA.eq.208) then !Lead	  
                  deltae_cc = 0.02035
+              elseif(iA.eq.118) then
+                 deltae_cc = 0.01440
               endif
    
               beame_cc  = e0sv(npts)+ deltae_cc
@@ -2108,6 +2110,8 @@ cc also, all deltae_cc's are computed for Z-1, not Z!/-*
   
       elseif(iA.eq.208) then !Lead        
            deltae_cc = 0.02035
+              elseif(iA.eq.118) then
+                 deltae_cc = 0.01440
 	endif
 
 
@@ -3112,6 +3116,7 @@ C=======================================================================
 !   Scattering. in Atomic Data and Nuclear Data Tables 36, 495(1987)
 ! 8/9/96
       IF(IA.EQ.205)RADIUS=5.470
+      IF(IA.EQ.118)RADIUS=4.626
       IF(IA.EQ.56) RADIUS=3.729    
       If(IA.EQ.28) RADIUS=3.085
       IF(IA.EQ.27) RADIUS=3.035                                                        
