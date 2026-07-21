@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import math
+import os
 import subprocess
 from pathlib import Path
 
@@ -16,6 +17,11 @@ TARGETS = {
     "C2": "rgdC2_rgd",
     "Cu": "rgdCu_rgd",
     "Sn": "rgdSn_rgd",
+}
+
+RADIATION_MODES = {
+    "internal": "0",
+    "internal-external": "1",
 }
 
 COLUMNS = [
@@ -42,11 +48,20 @@ def physics_rows(stdout: str) -> list[list[float]]:
     return rows
 
 
-def run_target(root: Path, binary: Path, target: str, stem: str, expected: int) -> list[dict[str, object]]:
+def run_target(
+    root: Path,
+    binary: Path,
+    target: str,
+    stem: str,
+    expected: int,
+    radiation_mode: str,
+) -> list[dict[str, object]]:
     input_path = root / "INP" / f"{stem}.inp"
     if not input_path.exists():
         raise RuntimeError(f"missing target input: {input_path}")
 
+    env = os.environ.copy()
+    env["RGD_DOEXT"] = RADIATION_MODES[radiation_mode]
     completed = subprocess.run(
         [str(binary)],
         cwd=root,
@@ -54,15 +69,17 @@ def run_target(root: Path, binary: Path, target: str, stem: str, expected: int) 
         text=True,
         capture_output=True,
         check=False,
+        env=env,
     )
     log_dir = root / "results" / "logs"
     log_dir.mkdir(parents=True, exist_ok=True)
-    (log_dir / f"{stem}.stdout.log").write_text(completed.stdout)
-    (log_dir / f"{stem}.stderr.log").write_text(completed.stderr)
+    log_stem = f"{stem}_{radiation_mode.replace('-', '_')}"
+    (log_dir / f"{log_stem}.stdout.log").write_text(completed.stdout)
+    (log_dir / f"{log_stem}.stderr.log").write_text(completed.stderr)
     if completed.returncode:
         raise RuntimeError(
             f"{target}: externals_all exited with {completed.returncode}; "
-            f"see {log_dir / f'{stem}.stdout.log'} and {log_dir / f'{stem}.stderr.log'}"
+            f"see {log_dir / f'{log_stem}.stdout.log'} and {log_dir / f'{log_stem}.stderr.log'}"
         )
 
     parsed = physics_rows(completed.stdout)
@@ -71,7 +88,11 @@ def run_target(root: Path, binary: Path, target: str, stem: str, expected: int) 
 
     rows: list[dict[str, object]] = []
     for values in parsed:
-        row: dict[str, object] = {"target": target, **dict(zip(COLUMNS, values))}
+        row: dict[str, object] = {
+            "target": target,
+            "radiation_mode": radiation_mode,
+            **dict(zip(COLUMNS, values)),
+        }
         born = float(row["sigma_born"])
         radiated = float(row["sigma_rad"])
         if not (math.isfinite(born) and math.isfinite(radiated) and born > 0 and radiated > 0):
@@ -103,6 +124,12 @@ def main() -> int:
     parser.add_argument("--run-plan", default="RUNPLAN/rgd_kin.inp")
     parser.add_argument("--binary", default="./externals_all")
     parser.add_argument("--output", default="results/tables/dis_rc_reference_grid.csv")
+    parser.add_argument(
+        "--radiation",
+        choices=["internal", "internal-external", "both"],
+        default="both",
+        help="radiation mode to run; default runs internal and internal-external",
+    )
     args = parser.parse_args()
 
     root = Path(__file__).resolve().parents[1]
@@ -114,19 +141,22 @@ def main() -> int:
         raise SystemExit(f"missing executable: {binary}; run make first")
 
     rows: list[dict[str, object]] = []
-    for target, stem in TARGETS.items():
-        print(f"Running {target} ({stem})...", flush=True)
-        rows.extend(run_target(root, binary, target, stem, expected))
+    modes = list(RADIATION_MODES) if args.radiation == "both" else [args.radiation]
+    for mode in modes:
+        for target, stem in TARGETS.items():
+            print(f"Running {target} ({stem}, {mode})...", flush=True)
+            rows.extend(run_target(root, binary, target, stem, expected, mode))
 
     output = root / args.output
     output.parent.mkdir(parents=True, exist_ok=True)
-    fields = ["target", *COLUMNS, "dis_rc_factor", "dis_rc_factor_err"]
+    fields = ["target", "radiation_mode", *COLUMNS, "dis_rc_factor", "dis_rc_factor_err"]
     with output.open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=fields)
         writer.writeheader()
         writer.writerows(rows)
 
     print(f"Validated targets: {', '.join(TARGETS)}")
+    print(f"Radiation modes: {', '.join(modes)}")
     print(f"Kinematic points per target: {expected}")
     print(f"Total factor rows: {len(rows)}")
     print(f"Output: {output}")

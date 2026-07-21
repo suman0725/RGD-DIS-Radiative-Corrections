@@ -58,6 +58,7 @@ C=======================================================================
       EXTERNAL       CONTINUUM,QETAIL,QEPEAK,EPEAK,ATAILFL1,ATAILFL_QE
       common/testing/prttst
       logical prttst,doeg1b,dorad,doext,doccor
+      character*32 rgd_doext_env
       common/experiment/ doeg1b
       real*4  xval(37),tmptmp,psf1(5),psf2(5)
       real*8 q28,w8,w18,w28
@@ -226,6 +227,8 @@ c     CALL  FYXSEC8(E0SET,EPSET,TH,SIGMA_CORR)
 
          dorad=.true.
          doext=.true.
+         call getenv('RGD_DOEXT', rgd_doext_env)
+         if(rgd_doext_env(1:1).eq.'0') doext=.false.
           
          if(dorad) then 
 C Radiation length integral. Loop over internal and internal+external:  
@@ -9306,7 +9309,6 @@ cdg       endif
 
       return
       end
-
 
 
 
