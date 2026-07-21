@@ -14,3 +14,5 @@ results/plots/
 results/tables/*.csv
 results/tables/*.txt
 
+
+!results/tables/dis_rc_reference_grid.csv
